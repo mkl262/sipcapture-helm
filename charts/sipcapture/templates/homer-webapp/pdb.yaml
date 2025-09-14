@@ -1,0 +1,15 @@
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: homer-webapp
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: homer-webapp
+    {{- include "common.labels" . | nindent 4 }}
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: homer-webapp
+      {{- include "common.labels" . | nindent 6 }}

@@ -12,6 +12,11 @@ spec:
     matchLabels:
       app: homer-webapp
       {{- include "common.labels" . | nindent 6 }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 50%
+      maxSurge: 100%
   template:
     metadata:
       labels:
@@ -21,10 +26,17 @@ spec:
         checksum/secret: {{ (fromYaml (include (print $.Template.BasePath "/homer-webapp/secret.yaml") . )).data | toString | sha256sum }}
         checksum/secret-config: {{ (fromYaml (include (print $.Template.BasePath "/homer-webapp/secret-config.yaml") . )).data | toString | sha256sum }}
     spec:
+      enableServiceLinks: false
 {{- if .Values.homer.image.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml .Values.homer.image.imagePullSecrets | nindent 8 }}
 {{- end }}
+      automountServiceAccountToken: false
+      securityContext:
+        runAsUser: 65534
+        runAsGroup: 65534
+        fsGroup: 65534
+        fsGroupChangePolicy: OnRootMismatch
       containers:
         - name: homer-webapp
           image: {{ printf "%s/%s:%s"  .Values.homer.image.registry .Values.homer.image.repository .Values.homer.image.tag | quote }}
@@ -47,6 +59,29 @@ spec:
                 secretKeyRef:
                   name: homer-webapp
                   key: dbPassword
+          readinessProbe:
+            periodSeconds: 10
+            initialDelaySeconds: 0
+            failureThreshold: 3
+            successThreshold: 2
+            timeoutSeconds: 1
+            httpGet:
+              scheme: HTTP
+              port: http
+              path: /
+          livenessProbe:
+            periodSeconds: 10
+            initialDelaySeconds: 60
+            failureThreshold: 6
+            timeoutSeconds: 1
+            httpGet:
+              scheme: HTTP
+              port: http
+              path: /
+          securityContext:
+            privileged: false
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
           volumeMounts:
             - mountPath: /usr/local/homer/etc/webapp_config.json
               name: homer-webapp-config

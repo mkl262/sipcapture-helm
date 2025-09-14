@@ -12,6 +12,11 @@ spec:
     matchLabels:
       app: heplify-server
       {{- include "common.labels" . | nindent 6 }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 50%
+      maxSurge: 100%
   template:
     metadata:
       labels:
@@ -21,10 +26,17 @@ spec:
         checksum/secret: {{ (fromYaml (include (print $.Template.BasePath "/heplify-server/secret.yaml") . )).data | toString | sha256sum }}
         checksum/secret-config: {{ (fromYaml (include (print $.Template.BasePath "/heplify-server/secret-config.yaml") . )).data | toString | sha256sum }}
     spec:
+      enableServiceLinks: false
 {{- if .Values.heplifyServer.image.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml .Values.heplifyServer.image.imagePullSecrets | nindent 8 }}
 {{- end }}
+      automountServiceAccountToken: false
+      securityContext:
+        runAsUser: 65534
+        runAsGroup: 65534
+        fsGroup: 65534
+        fsGroupChangePolicy: OnRootMismatch
       containers:
         - name: heplify-server
           image: {{ printf "%s/%s:%s"  .Values.heplifyServer.image.registry .Values.heplifyServer.image.repository .Values.heplifyServer.image.tag | quote }}
@@ -42,6 +54,31 @@ spec:
               name: hep-ws
             - containerPort: 9096
               name: prom-metrics
+            - containerPort: 9876
+              name: http-config
+          readinessProbe:
+            periodSeconds: 10
+            initialDelaySeconds: 0
+            failureThreshold: 3
+            successThreshold: 2
+            timeoutSeconds: 1
+            httpGet:
+              scheme: HTTP
+              port: prom-metrics
+              path: /
+          livenessProbe:
+            periodSeconds: 10
+            initialDelaySeconds: 60
+            failureThreshold: 6
+            timeoutSeconds: 1
+            httpGet:
+              scheme: HTTP
+              port: prom-metrics
+              path: /
+          securityContext:
+            privileged: false
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
           volumeMounts:
             - mountPath: /etc/heplify-server.toml
               name: heplify-server-config

@@ -16,6 +16,20 @@ heplifyServer:
     type: ClusterIP
     labels: {}
     annotations: {}
+      # service.beta.kubernetes.io/aws-load-balancer-type: external
+      # service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: ip
+      # service.beta.kubernetes.io/aws-load-balancer-scheme: internal
+      # service.beta.kubernetes.io/aws-load-balancer-healthcheck-healthy-threshold: "2"
+      # service.beta.kubernetes.io/aws-load-balancer-healthcheck-unhealthy-threshold: "2"
+      # service.beta.kubernetes.io/aws-load-balancer-healthcheck-protocol: HTTP
+      # service.beta.kubernetes.io/aws-load-balancer-healthcheck-port: "9096"
+      # service.beta.kubernetes.io/aws-load-balancer-healthcheck-path: /
+      # service.beta.kubernetes.io/aws-load-balancer-target-group-attributes: "preserve_client_ip.enabled=true, deregistration_delay.timeout_seconds=1, deregistration_delay.connection_termination.enabled=true"
+      # service.beta.kubernetes.io/aws-load-balancer-attributes: "deletion_protection.enabled=true, load_balancing.cross_zone.enabled=true"
+      # service.beta.kubernetes.io/aws-load-balancer-listener-attributes.TCP-9060: tcp.idle_timeout.seconds=3600
+      # service.beta.kubernetes.io/aws-load-balancer-listener-attributes.TCP-9061: tcp.idle_timeout.seconds=3600
+      # service.beta.kubernetes.io/aws-load-balancer-listener-attributes.TCP-3000: tcp.idle_timeout.seconds=3600
+      # service.beta.kubernetes.io/aws-load-balancer-enable-tcp-udp-listener: "true"
 
   db:
     username: postgres
@@ -30,7 +44,7 @@ heplifyServer:
     HEPTLSAddr            = "0.0.0.0:9061"
     HEPWSAddr             = "0.0.0.0:3000"
     ESAddr                = ""
-    ESDiscovery           = true
+    ESDiscovery           = false
     LokiURL               = ""
     LokiBulk              = 200
     LokiTimer             = 4
@@ -64,7 +78,7 @@ heplifyServer:
     DBUsageProtection     = true
     DBUsageScheme         = "percentage"
     DBPercentageUsage     = "80%"
-    DBMaxSize             = "30MB"
+    DBMaxSize             = "5GB"
     Dedup                 = false
     DiscardMethod         = []
     AlegIDs               = []
@@ -75,7 +89,7 @@ heplifyServer:
     LogStd                = true
     LogSys                = false
     Config                = "./heplify-server.toml"
-    ConfigHTTPAddr        = ""
+    ConfigHTTPAddr        = "127.0.0.1:9876"
 
     # Examples:
     # -------------------------------------
