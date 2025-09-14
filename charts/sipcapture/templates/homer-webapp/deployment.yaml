@@ -15,6 +15,9 @@ spec:
     metadata:
       labels:
         app: homer-webapp
+      annotations:
+        checksum/secret: {{ (fromYaml (include (print $.Template.BasePath "/homer-webapp/secret.yaml") . )).data | toString | sha256sum }}
+        checksum/secret-config: {{ (fromYaml (include (print $.Template.BasePath "/homer-webapp/secret-config.yaml") . )).data | toString | sha256sum }}
     spec:
       containers:
         - name: homer-webapp
@@ -24,24 +27,26 @@ spec:
           resources: {}
           env:
             - name: DB_HOST
-              value: postgresql
+              value: {{ .Values.postgresql.host }}
             - name: DB_USER
-              value: postgres
+              valueFrom:
+                secretKeyRef:
+                  name: homer-webapp
+                  key: dbUsername
             - name: DB_PASS
-              value: {{ .Values.postgresql.auth.postgresPassword | quote }}
+              valueFrom:
+                secretKeyRef:
+                  name: homer-webapp
+                  key: dbPassword
           volumeMounts:
             - mountPath: /usr/local/homer/etc/webapp_config.json
-              name: webapp-conf
+              name: homer-webapp-config
               subPath: webapp_config.json
             - mountPath: /homer-semaphore/.bootstrapped
-              name: webapp-conf
+              name: homer-webapp-config
               subPath: bootstrapped
       volumes:
-      - name: webapp-conf
-        configMap:
-          name: webapp-conf
-          items:
-          - key: webapp_config.json
-            path: webapp_config.json          
-          - key: bootstrapped
-            path: bootstrapped
+        - name: homer-webapp-config
+          secret:
+            defaultMode: 0400
+            secretName: homer-webapp-config
