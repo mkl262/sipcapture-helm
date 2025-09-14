@@ -1,11 +1,11 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  name: homer-webapp
+  namespace: {{ .Release.Namespace }}
   labels:
     app: homer-webapp
 {{ include "common.labels" . | indent 4 }}
-  name: homer-webapp
-  namespace: {{ dig "global" "monitoring" "namespace" .Release.Namespace (.Values | merge (dict)) | quote }}
 spec:
   replicas: 1
   selector:

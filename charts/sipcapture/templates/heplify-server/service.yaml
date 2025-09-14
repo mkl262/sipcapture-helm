@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
+  name: heplify-server
+  namespace: {{ .Release.Namespace }}
   labels:
     app: heplify-server
 {{ include "common.labels" . | indent 4 }}
-  name: heplify-server
-  namespace: {{ dig "global" "monitoring" "namespace" .Release.Namespace (.Values | merge (dict)) | quote }}
 spec:
   ports:
     - name: "heplify-server"
