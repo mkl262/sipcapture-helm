@@ -1,5 +1,5 @@
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
   name: heplify-server
   labels:
@@ -7,7 +7,6 @@ metadata:
 {{ include "common.labels" . | indent 4 }}
   namespace: {{ dig "global" "monitoring" "namespace" .Release.Namespace (.Values | merge (dict)) | quote }}
 spec:
-  serviceName: heplify-server
   replicas: 1
   selector:
     matchLabels:
