@@ -1,9 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: grafana-datasource-configmap
-  labels:
-    grafana_datasource: 'true' # default value for: sidecar.datasources.label
-data:
-  datasources.yaml: |
-{{ (tpl (.Files.Get "configs/grafana/datasources.yaml") . ) | indent 4}}

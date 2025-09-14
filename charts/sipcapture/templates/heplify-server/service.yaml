@@ -1,0 +1,34 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: heplify-server
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: heplify-server
+    {{- include "common.labels" . | nindent 4 }}
+  {{- if .Values.heplifyServer.service.labels }}
+    {{- toYaml .Values.heplifyServer.service.labels | nindent 4 }}
+  {{- end }}
+  {{- if .Values.heplifyServer.service.annotations }}
+  annotations:
+    {{- toYaml .Values.heplifyServer.service.annotations | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.heplifyServer.service.type }}
+  ports:
+    - port: 9060
+      name: hep-tcp
+      targetPort: hep-tcp
+    - port: 9060
+      protocol: UDP
+      name: hep-udp
+      targetPort: hep-udp
+    - port: 9061
+      name: hep-tls
+      targetPort: hep-tls
+    - port: 3000
+      name: hep-ws
+      targetPort: hep-ws
+  selector:
+    app: heplify-server
+    {{- include "common.labels" . | nindent 4 }}

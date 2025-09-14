@@ -1,0 +1,96 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: homer-webapp
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: homer-webapp
+{{ include "common.labels" . | indent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: homer-webapp
+      {{- include "common.labels" . | nindent 6 }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 50%
+      maxSurge: 100%
+  template:
+    metadata:
+      labels:
+        app: homer-webapp
+        {{- include "common.labels" . | nindent 8 }}
+      annotations:
+        checksum/secret: {{ (fromYaml (include (print $.Template.BasePath "/homer-webapp/secret.yaml") . )).data | toString | sha256sum }}
+        checksum/secret-config: {{ (fromYaml (include (print $.Template.BasePath "/homer-webapp/secret-config.yaml") . )).data | toString | sha256sum }}
+    spec:
+      enableServiceLinks: false
+{{- if .Values.homer.image.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml .Values.homer.image.imagePullSecrets | nindent 8 }}
+{{- end }}
+      automountServiceAccountToken: false
+      securityContext:
+        runAsUser: 65534
+        runAsGroup: 65534
+        fsGroup: 65534
+        fsGroupChangePolicy: OnRootMismatch
+      containers:
+        - name: homer-webapp
+          image: {{ printf "%s/%s:%s"  .Values.homer.image.registry .Values.homer.image.repository .Values.homer.image.tag | quote }}
+          imagePullPolicy: {{ quote .Values.homer.image.imagePullPolicy }}
+          ports:
+            - containerPort: 9080
+              name: http
+            - containerPort: 9443
+              name: https
+          env:
+            - name: DB_HOST
+              value: {{ .Values.postgresql.host }}
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: homer-webapp
+                  key: dbUsername
+            - name: DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: homer-webapp
+                  key: dbPassword
+          readinessProbe:
+            periodSeconds: 10
+            initialDelaySeconds: 0
+            failureThreshold: 3
+            successThreshold: 2
+            timeoutSeconds: 1
+            httpGet:
+              scheme: HTTP
+              port: http
+              path: /
+          livenessProbe:
+            periodSeconds: 10
+            initialDelaySeconds: 60
+            failureThreshold: 6
+            timeoutSeconds: 1
+            httpGet:
+              scheme: HTTP
+              port: http
+              path: /
+          securityContext:
+            privileged: false
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - mountPath: /usr/local/homer/etc/webapp_config.json
+              name: homer-webapp-config
+              subPath: webapp_config.json
+            - mountPath: /homer-semaphore/.bootstrapped
+              name: homer-webapp-config
+              subPath: bootstrapped
+      volumes:
+        - name: homer-webapp-config
+          secret:
+            defaultMode: 0400
+            secretName: homer-webapp-config

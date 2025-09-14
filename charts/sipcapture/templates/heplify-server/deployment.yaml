@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: heplify-server
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: heplify-server
+    {{- include "common.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.heplifyServer.replicas }}
+  selector:
+    matchLabels:
+      app: heplify-server
+      {{- include "common.labels" . | nindent 6 }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 50%
+      maxSurge: 100%
+  template:
+    metadata:
+      labels:
+        app: heplify-server
+        {{- include "common.labels" . | nindent 8 }}
+      annotations:
+        checksum/secret: {{ (fromYaml (include (print $.Template.BasePath "/heplify-server/secret.yaml") . )).data | toString | sha256sum }}
+        checksum/secret-config: {{ (fromYaml (include (print $.Template.BasePath "/heplify-server/secret-config.yaml") . )).data | toString | sha256sum }}
+    spec:
+      enableServiceLinks: false
+{{- if .Values.heplifyServer.image.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml .Values.heplifyServer.image.imagePullSecrets | nindent 8 }}
+{{- end }}
+      automountServiceAccountToken: false
+      securityContext:
+        runAsUser: 65534
+        runAsGroup: 65534
+        fsGroup: 65534
+        fsGroupChangePolicy: OnRootMismatch
+      containers:
+        - name: heplify-server
+          image: {{ printf "%s/%s:%s"  .Values.heplifyServer.image.registry .Values.heplifyServer.image.repository .Values.heplifyServer.image.tag | quote }}
+          imagePullPolicy: {{ quote .Values.heplifyServer.image.imagePullPolicy }}
+          args: ['./heplify-server', '-config', '/etc/heplify-server.toml']
+          ports:
+            - containerPort: 9060
+              name: hep-tcp
+            - containerPort: 9060
+              protocol: UDP
+              name: hep-udp
+            - containerPort: 9061
+              name: hep-tls
+            - containerPort: 3000
+              name: hep-ws
+            - containerPort: 9096
+              name: prom-metrics
+            - containerPort: 9876
+              name: http-config
+          readinessProbe:
+            periodSeconds: 10
+            initialDelaySeconds: 0
+            failureThreshold: 3
+            successThreshold: 2
+            timeoutSeconds: 1
+            httpGet:
+              scheme: HTTP
+              port: prom-metrics
+              path: /
+          livenessProbe:
+            periodSeconds: 10
+            initialDelaySeconds: 60
+            failureThreshold: 6
+            timeoutSeconds: 1
+            httpGet:
+              scheme: HTTP
+              port: prom-metrics
+              path: /
+          securityContext:
+            privileged: false
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - mountPath: /etc/heplify-server.toml
+              name: heplify-server-config
+              subPath: heplify-server.toml
+      volumes:
+        - name: heplify-server-config
+          secret:
+            defaultMode: 0400
+            secretName: heplify-server-config

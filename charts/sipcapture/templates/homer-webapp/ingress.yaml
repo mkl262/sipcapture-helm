@@ -1,0 +1,35 @@
+{{- if .Values.homer.ingress.enabled -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: homer-webapp
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: homer-webapp
+    {{- include "common.labels" . | nindent 4 }}
+  {{- if .Values.homer.ingress.labels }}
+    {{- toYaml .Values.homer.ingress.labels | nindent 4 }}
+  {{- end }}
+  {{- if .Values.homer.ingress.annotations }}
+  annotations:
+    {{- toYaml .Values.homer.ingress.annotations | nindent 4 }}
+  {{- end }}
+spec:
+  ingressClassName: {{ .Values.homer.ingress.class }}
+  tls:
+    - hosts:
+        - {{ .Values.homer.ingress.hostname }}
+      secretName: {{ .Values.homer.tls.secretName }}
+  rules:
+    - host: {{ .Values.homer.ingress.hostname }}
+      http:
+        paths:
+          - path: "/"
+            pathType: Prefix
+            backend:
+              service:
+                name: homer-webapp
+                port:
+                  name: http
+
+{{- end }}
