@@ -318,10 +318,11 @@ homer:
     }
 
 postgresql:
-  installOnCluster: true
+  deploy: true
   host: postgresql
   port: 5432
+  fullnameOverride: postgresql
   auth:
     postgresPassword: "homerSeven"
-    persistence:
-      size: 30Gi
+  persistence:
+    size: 8Gi

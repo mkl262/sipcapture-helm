@@ -6,12 +6,12 @@ description: HOMER/SIPCAPTURE stack
 home: https://sipcapture.org
 icon: https://user-images.githubusercontent.com/1423657/55069501-8348c400-5084-11e9-9931-fefe0f9874a7.png
 keywords:
-  - voip 
-  - monitoring 
-  - pcap 
-  - sip 
+  - voip
+  - monitoring
+  - pcap
+  - sip
   - rtp
-maintainers: 
+maintainers:
   - name: Dave Horton
     email: daveh@drachtio.org
   - name: Lorenzo Mangani
@@ -23,6 +23,6 @@ sources:
   - https://github.com/jambonz/helm-charts
 dependencies:
   - name: postgresql
-    version: 16.2.1
-    repository: "https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami"
-    condition: postgresql.installOnCluster
+    version: 16.7.27
+    repository: https://charts.bitnami.com/bitnami
+    condition: postgresql.deploy
