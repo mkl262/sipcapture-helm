@@ -21,9 +21,14 @@ spec:
         checksum/secret: {{ (fromYaml (include (print $.Template.BasePath "/homer-webapp/secret.yaml") . )).data | toString | sha256sum }}
         checksum/secret-config: {{ (fromYaml (include (print $.Template.BasePath "/homer-webapp/secret-config.yaml") . )).data | toString | sha256sum }}
     spec:
+{{- if .Values.homer.image.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml .Values.homer.image.imagePullSecrets | nindent 8 }}
+{{- end }}
       containers:
         - name: homer-webapp
-          image: {{ .Values.homer.image }}
+          image: {{ printf "%s/%s:%s"  .Values.homer.image.registry .Values.homer.image.repository .Values.homer.image.tag | quote }}
+          imagePullPolicy: {{ quote .Values.homer.image.imagePullPolicy }}
           ports:
             - containerPort: 9080
               name: http

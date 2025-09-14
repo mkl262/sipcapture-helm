@@ -3,7 +3,14 @@ grafana:
   createDashboards: false
 
 heplifyServer:
-  image: ghcr.io/sipcapture/heplify-server:latest
+  image:
+    registry: ghcr.io
+    repository: sipcapture/heplify-server
+    tag: 1.60.0
+    imagePullPolicy: IfNotPresent
+    # imagePullSecrets: []
+
+  replicas: 1
 
   service:
     type: ClusterIP
@@ -100,7 +107,14 @@ heplifyServer:
 
 
 homer: 
-  image: ghcr.io/sipcapture/homer-app:latest
+  image:
+    registry: ghcr.io
+    repository: sipcapture/homer-app
+    tag: 1.5.13
+    imagePullPolicy: IfNotPresent
+    # imagePullSecrets: []
+
+  replicas: 1
 
   ingress:
     enabled: false
@@ -328,6 +342,12 @@ postgresql:
   deploy: true
   host: postgresql
   port: 5432
+
+  # image:
+  #   registry: docker.io
+  #   repository: bitnami/postgresql
+  #   tag: 17.6.0-debian-12-r4
+
   fullnameOverride: postgresql
   auth:
     postgresPassword: "homerSeven"
