@@ -2,8 +2,13 @@ grafana:
   namespace: monitoring
   createDashboards: false
 
-heplifyServer: 
+heplifyServer:
   image: ghcr.io/sipcapture/heplify-server:latest
+
+  service:
+    type: ClusterIP
+    labels: {}
+    annotations: {}
 
   db:
     username: postgres
@@ -96,12 +101,14 @@ heplifyServer:
 
 homer: 
   image: ghcr.io/sipcapture/homer-app:latest
+
   ingress:
-    enabled: true # Disable if ingress controller absent or want to deploy using nodeport service only
-    hostname: webapp.myimaginaryhost.com
-    annotations:
-      kubernetes.io/ingress.class: "nginx"
+    enabled: false
+    hostname: homer.local
+    secretName: ""
+    class: ""
     labels: {}
+    annotations: {}
 
   admin:
     username: admin

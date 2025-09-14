@@ -5,16 +5,18 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     app: heplify-server
-{{ include "common.labels" . | indent 4 }}
+    {{- include "common.labels" . | nindent 4 }}
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: heplify-server
+      {{- include "common.labels" . | nindent 6 }}
   template:
     metadata:
       labels:
         app: heplify-server
+        {{- include "common.labels" . | nindent 8 }}
       annotations:
         checksum/secret: {{ (fromYaml (include (print $.Template.BasePath "/heplify-server/secret.yaml") . )).data | toString | sha256sum }}
         checksum/secret-config: {{ (fromYaml (include (print $.Template.BasePath "/heplify-server/secret-config.yaml") . )).data | toString | sha256sum }}
@@ -25,7 +27,14 @@ spec:
           args: ['./heplify-server', '-config', '/etc/heplify-server.toml']
           ports:
             - containerPort: 9060
+              name: hep-tcp
+            - containerPort: 9060
               protocol: UDP
+              name: hep-udp
+            - containerPort: 9061
+              name: hep-tls
+            - containerPort: 3000
+              name: hep-ws
             - containerPort: 9096
               name: prom-metrics
           resources: {}

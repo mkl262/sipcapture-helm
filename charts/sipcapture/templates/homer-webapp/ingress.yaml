@@ -4,22 +4,32 @@ kind: Ingress
 metadata:
   name: homer-webapp
   namespace: {{ .Release.Namespace }}
-  annotations:
-    {{- with .Values.homer.ingress.annotations }}
-    {{- toYaml . | nindent 4 }}
-    {{- end }}
   labels:
-{{ include "common.labels" . | indent 4 }}
+    app: homer-webapp
+    {{- include "common.labels" . | nindent 4 }}
+  {{- if .Values.homer.ingress.labels }}
+    {{- toYaml .Values.homer.ingress.labels | nindent 4 }}
+  {{- end }}
+  {{- if .Values.homer.ingress.annotations }}
+  annotations:
+    {{- toYaml .Values.homer.ingress.annotations | nindent 4 }}
+  {{- end }}
 spec:
+  ingressClassName: {{ .Values.homer.ingress.class }}
+  tls:
+    - hosts:
+        - {{ .Values.homer.ingress.hostname }}
+      secretName: {{ .Values.homer.tls.secretName }}
   rules:
-    - host: {{ required "hostname for the homer portal" .Values.homer.ingress.hostname }}
+    - host: {{ .Values.homer.ingress.hostname }}
       http:
         paths:
-        - backend:
-            service:
-              name: homer-webapp
-              port: 
-                number: 80
-          path: /
-          pathType: Prefix
+          - path: "/"
+            pathType: Prefix
+            backend:
+              service:
+                name: homer-webapp
+                port:
+                  name: http
+
 {{- end }}

@@ -5,12 +5,16 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     app: homer-webapp
-{{ include "common.labels" . | indent 4 }}
+    {{- include "common.labels" . | nindent 4 }}
 spec:
+  type: ClusterIP
   ports:
-    - name: homer-webapp
-      port: 80
-      targetPort: 80
-  type: NodePort
+    - port: 9080
+      name: http
+      targetPort: http
+    - port: 9443
+      name: https
+      targetPort: https
   selector:
     app: homer-webapp
+    {{- include "common.labels" . | nindent 4 }}
