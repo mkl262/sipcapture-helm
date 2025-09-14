@@ -1,27 +1,6 @@
-grafana: 
-  installOnCluster: true
-  ingress:
-    enabled: true # Disable if ingress controller absent or want to deploy using nodeport service only
-    annotations:
-      kubernetes.io/ingress.class: "nginx"
-    hosts:
-      - grafana.myimaginaryhost.com
-
-  service:
-    type: "NodePort"
-
-  adminUser: admin
-  adminPassword: "admin"
-
-  sidecar:
-    datasources:
-      enabled: true
-    dashboards:
-      enabled: true
-
-  persistence:
-    enabled: true
-    size: 2Gi
+grafana:
+  namespace: monitoring
+  createDashboards: false
 
 heplifyServer: 
   image: ghcr.io/sipcapture/heplify-server:latest
@@ -107,11 +86,14 @@ heplifyServer:
     # To hot reload PromTargetIP and PromTargetName run:
     # killall -HUP heplify-server
 
+  podMonitor:
+    enable: true
+    labels:
+      release: prom-stack
+    interval: 10s
+    scrapeTimeout: 5s
 
-influxdb: 
-  image: influxdb:1.8
-  loglevel: info
-  storage: 10Gi
+
 homer: 
   image: ghcr.io/sipcapture/homer-app:latest
   ingress:
@@ -343,7 +325,3 @@ postgresql:
     postgresPassword: "homerSeven"
     persistence:
       size: 30Gi
-
-telegraf: 
-  image: telegraf:1.19
-

@@ -1,0 +1,26 @@
+{{- if .Values.heplifyServer.podMonitor.enable }}
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: heplify-server
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: heplify-server
+    {{- include "common.labels" . | nindent 4 }}
+  {{- if .Values.heplifyServer.podMonitor.labels }}
+    {{- toYaml .Values.heplifyServer.podMonitor.labels | nindent 4 }}
+  {{- end }}
+spec:
+  selector:
+    matchLabels:
+      app: heplify-server
+      {{- include "common.labels" . | nindent 6 }}
+  podMetricsEndpoints:
+    - port: prom-metrics
+      interval: {{ .Values.heplifyServer.podMonitor.interval }}
+      scrapeTimeout: {{ .Values.heplifyServer.podMonitor.scrapeTimeout }}
+      path: /metrics
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+{{- end }}

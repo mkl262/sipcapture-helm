@@ -1,12 +1,15 @@
+{{- if .Values.grafana.createDashboards -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: homer-grafana-dashboard-config
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ .Values.grafana.namespace | default .Release.Namespace }}
   labels:
+    {{- include "common.labels" . | nindent 4 }}
     grafana_dashboard: "1"
 data:
   jambonz-dashboard.json: |-
     {{ .Files.Get "configs/grafana/dashboards/jambonz-dashboard.json" | nindent 4 }}
   jambonz-heplify.json: |-
     {{ .Files.Get "configs/grafana/dashboards/jambonz-heplify.json" | nindent 4 }}
+{{- end }}

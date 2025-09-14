@@ -27,7 +27,7 @@ spec:
             - containerPort: 9060
               protocol: UDP
             - containerPort: 9096
-              protocol: TCP
+              name: prom-metrics
           resources: {}
           volumeMounts:
             - mountPath: /etc/heplify-server.toml

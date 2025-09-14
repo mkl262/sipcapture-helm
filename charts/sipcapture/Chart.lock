@@ -1,7 +1,4 @@
 dependencies:
-- name: grafana
-  repository: https://grafana.github.io/helm-charts
-  version: 7.0.9
 - name: postgresql
   repository: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
   version: 16.2.1
