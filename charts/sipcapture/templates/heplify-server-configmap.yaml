@@ -24,9 +24,8 @@ data:
     PromTargetName        = ""
     DBShema               = "homer7"
     DBDriver              = "postgres"
-    DBAddr                = "postgresql:5432"
-    DBUser                = "postgres"
-    DBPass                = "homerSeven"
+    DBAddr                = "{{ .Values.postgresql.hostname }}:{{ default "5432" .Values.postgresql.port }}"
+    DBSSLMode             = "{{ default "disable" .Values.postgresql.sslmode }}"
     DBDataTable           = "homer_data"
     DBConfTable           = "homer_config"
     DBBulk                = 200

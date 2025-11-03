@@ -5,7 +5,6 @@ metadata:
   labels:
     app: heplify-server
 {{ include "common.labels" . | indent 4 }}
-  namespace: {{ dig "global" "monitoring" "namespace" .Release.Namespace (.Values | merge (dict)) | quote }}
 spec:
   serviceName: heplify-server
   replicas: 1
@@ -17,10 +16,25 @@ spec:
       labels:
         app: heplify-server
     spec:
+      {{- include "heplifyServer.imagePullSecrets" . | nindent 6 }}
       containers:
         - name: heplify-server
-          image: {{ .Values.heplifyServer.image }}
-          args: ['./heplify-server', '-config', '/etc/heplify-server.toml']
+          image: "{{ .Values.heplifyServer.image.registry }}/{{ .Values.heplifyServer.image.repository }}:{{ .Values.heplifyServer.image.tag }}"
+          args:
+            - './heplify-server'
+            - '-config'
+            - '/etc/heplify-server.toml'
+          env:
+            - name: HEPLIFYSERVER_DBUSER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgresql.auth.existingSecretHomer }}
+                  key: postgres-user
+            - name: HEPLIFYSERVER_DBPASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgresql.auth.existingSecretHomer }}
+                  key: postgres-password
           ports:
             - containerPort: 9060
               protocol: UDP

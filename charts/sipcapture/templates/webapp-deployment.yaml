@@ -16,23 +16,156 @@ spec:
       labels:
         app: homer-webapp
     spec:
+      {{- include "homer.imagePullSecrets" . | nindent 6 }}
+      initContainers:
+      - name: copy-config
+        image: "{{ .Values.homer.image.registry }}/{{ .Values.homer.image.repository }}:{{ .Values.homer.image.tag }}"
+        command:
+          - sh
+          - -c
+          - |
+            set -e -o pipefail
+            cp /webapp_config.json /config
+            cp /usr/local/homer/etc/swagger.json /config
+        volumeMounts:
+          - mountPath: /webapp_config.json
+            name: webapp-conf
+            subPath: webapp_config.json
+          - mountPath: /config
+            name: config-dir
+      - name: init-db
+        image: "{{ .Values.homer.image.registry }}/{{ .Values.homer.image.repository }}:{{ .Values.homer.image.tag }}"
+        env:
+          - name: DB_HOST
+            value: "{{ .Values.postgresql.hostname }}"
+          - name: DB_PORT
+            value: "{{ default "5432" .Values.postgresql.port }}"
+          - name: DB_ROOT_USER
+            {{- if .Values.postgresql.auth.existingSecret }}
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.postgresql.auth.existingSecret }}
+                key: postgres-user
+            {{- else }}
+            value: "{{ .Values.postgresql.auth.postgresUser }}"
+            {{- end }}
+          - name: DB_ROOT_PASSWORD
+            {{- if .Values.postgresql.auth.existingSecret }}
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.postgresql.auth.existingSecret }}
+                key: postgres-password
+            {{- else }}
+            value: "{{ .Values.postgresql.auth.postgresPassword }}"
+            {{- end }}
+          - name: DB_HOMER_USER
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.postgresql.auth.existingSecretHomer }}
+                key: postgres-user
+          - name: DB_HOMER_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.postgresql.auth.existingSecretHomer }}
+                key: postgres-password
+        command:
+          - sh
+          - -c
+          - |
+            set -e -o pipefail
+            echo [*] "Creating homer user"
+            /homer-app -create-homer-user \
+                       -database-host=$DB_HOST \
+                       -database-port=$DB_PORT \
+                       {{- if eq .Values.postgresql.sslmode "enable" }}
+                       -database-ssl-mode=enable \
+                       {{- end }}
+                       -database-homer-password=$DB_HOMER_PASSWORD \
+                       -database-root-user=$DB_ROOT_USER \
+                       -database-root-password=$DB_ROOT_PASSWORD
+            echo [*] Creating config DB
+            /homer-app -create-config-db \
+                       -database-host=$DB_HOST \
+                       -database-port=$DB_PORT \
+                       {{- if eq .Values.postgresql.sslmode "enable" }}
+                       -database-ssl-mode=enable \
+                       {{- end }}
+                       -database-homer-user=$DB_HOMER_USER \
+                       -database-homer-password=$DB_HOMER_PASSWORD \
+                       -database-root-user=$DB_ROOT_USER \
+                       -database-root-password=$DB_ROOT_PASSWORD \
+                       -webapp-config-path=/usr/local/homer/etc
+            echo [*] Creating data DB
+            /homer-app -create-data-db \
+                       -database-host=$DB_HOST \
+                       -database-port=$DB_PORT \
+                       -database-homer-user=$DB_HOMER_USER \
+                       -database-homer-password=$DB_HOMER_PASSWORD \
+                       -database-root-user=$DB_ROOT_USER \
+                       -database-root-password=$DB_ROOT_PASSWORD \
+                       {{- if eq .Values.postgresql.sslmode "enable" }}
+                       -database-ssl-mode=enable \
+                       {{- end }}
+                       -webapp-config-path=/usr/local/homer/etc
+            echo [*] Creating homer role
+            /homer-app -create-homer-role \
+                       -database-host=$DB_HOST \
+                       -database-port=$DB_PORT \
+                       {{- if eq .Values.postgresql.sslmode "enable" }}
+                       -database-ssl-mode=enable \
+                       {{- end }}
+                       -database-root-user=$DB_ROOT_USER \
+                       -database-root-password=$DB_ROOT_PASSWORD
+        volumeMounts:
+          - mountPath: /usr/local/homer/etc
+            name: config-dir
+
       containers:
         - name: homer-webapp
-          image: {{ .Values.homer.image }}
+          image: "{{ .Values.homer.image.registry }}/{{ .Values.homer.image.repository }}:{{ .Values.homer.image.tag }}"
           ports:
             - containerPort: 80
+          args:
+            - /homer-app
+            {{- if eq .Values.postgresql.sslmode "enable" }}
+            - -database-ssl-mode=enable
+            {{- end }}
+            - -webapp-config-path=/usr/local/homer/etc
           resources: {}
           env:
             - name: DB_HOST
-              value: postgresql
+              value: "{{ .Values.postgresql.hostname }}"
+            - name: DB_ROOT_USER
+              {{- if .Values.postgresql.auth.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgresql.auth.existingSecret }}
+                  key: postgres-user
+              {{- else }}
+              value: "{{ .Values.postgresql.auth.postgresUser }}"
+              {{- end }}
+            - name: DB_ROOT_PASS
+              {{- if .Values.postgresql.auth.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgresql.auth.existingSecret }}
+                  key: postgres-password
+              {{- else }}
+              value: "{{ .Values.postgresql.auth.postgresPassword }}"
+              {{- end }}
             - name: DB_USER
-              value: postgres
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgresql.auth.existingSecretHomer }}
+                  key: postgres-user
             - name: DB_PASS
-              value: {{ .Values.postgresql.auth.postgresPassword | quote }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgresql.auth.existingSecretHomer }}
+                  key: postgres-password
           volumeMounts:
-            - mountPath: /usr/local/homer/etc/webapp_config.json
-              name: webapp-conf
-              subPath: webapp_config.json
+            - mountPath: /usr/local/homer/etc
+              name: config-dir
             - mountPath: /homer-semaphore/.bootstrapped
               name: webapp-conf
               subPath: bootstrapped
@@ -42,6 +175,8 @@ spec:
           name: webapp-conf
           items:
           - key: webapp_config.json
-            path: webapp_config.json          
+            path: webapp_config.json
           - key: bootstrapped
             path: bootstrapped
+      - name: config-dir
+        emptyDir: {}

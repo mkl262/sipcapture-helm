@@ -18,8 +18,9 @@ spec:
       labels:
         app: influxdb
     spec:
+      {{- include "influxdb.imagePullSecrets" . | nindent 6 }}
       containers:
-        - image: {{ .Values.influxdb.image }}
+        - image: "{{ .Values.influxdb.image.registry }}/{{ .Values.influxdb.image.repository }}:{{ .Values.influxdb.image.tag }}"
           name: influxdb
           env:
             - name: {{ .Values.influxdb.loglevel| quote }}

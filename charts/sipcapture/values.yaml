@@ -1,4 +1,6 @@
-grafana: 
+global:
+  create_namespace: true
+grafana:
   installOnCluster: true
   ingress:
     enabled: true # Disable if ingress controller absent or want to deploy using nodeport service only
@@ -23,19 +25,53 @@ grafana:
     enabled: true
     size: 2Gi
 
-heplifyServer: 
-  image: ghcr.io/sipcapture/heplify-server:latest
-influxdb: 
-  image: influxdb:1.8
+heplifyServer:
+  image:
+    registry: ghcr.io
+    repository: sipcapture/heplify-server
+    tag: latest
+    pullSecrets: []
+
+influxdb:
+  installOnCluster: true
+  image:
+    registry: docker.io
+    repository: influxdb
+    tag: 1.8
+    pullSecrets: []
   loglevel: info
   storage: 10Gi
-homer: 
-  image: ghcr.io/sipcapture/homer-app:latest
+
+homer:
+  image:
+    registry: ghcr.io
+    repository: sipcapture/homer-app
+    tag: latest
+    pullSecrets: []
   ingress:
     enabled: true # Disable if ingress controller absent or want to deploy using nodeport service only
     hostname: webapp.myimaginaryhost.com
     annotations:
       kubernetes.io/ingress.class: "nginx"
+  auth:
+    oauth:
+      enabled: false
+      client_id: ""
+      client_secret: ""
+      project_id: ""
+      auth_uri: ""
+      token_uri: ""
+      auth_provider_x509_cert_url: ""
+      redirect_uri: ""
+      service_redirect: ""
+      profile_url: ""
+      user_token: ""
+      provider_name: ""
+      provider_image: ""
+      scope:
+        - email
+        - openid
+        - profile
 
 postgresql:
   installOnCluster: true
@@ -45,6 +81,10 @@ postgresql:
     persistence:
       size: 30Gi
 
-telegraf: 
-  image: telegraf:1.19
-
+telegraf:
+  installOnCluster: true
+  image:
+    registry: docker.io
+    repository: telegraf
+    tag: 1.19
+    pullSecrets: []

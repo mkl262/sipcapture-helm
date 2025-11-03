@@ -3,10 +3,10 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: homer-webapp
+  {{- if .Values.homer.ingress.annotations }}
   annotations:
-    {{- with .Values.homer.ingress.annotations }}
-    {{- toYaml . | nindent 4 }}
-    {{- end }}
+    {{- toYaml .Values.homer.ingress.annotations | nindent 4 }}
+  {{- end }}
   namespace: {{ dig "global" "monitoring" "namespace" .Release.Namespace (.Values | merge (dict)) | quote }}
   labels:
 {{ include "common.labels" . | indent 4 }}

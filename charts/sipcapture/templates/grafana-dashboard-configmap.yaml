@@ -1,3 +1,4 @@
+{{- if .Values.grafana.installOnCluster }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -9,3 +10,4 @@ data:
     {{ .Files.Get "configs/grafana/dashboards/jambonz-dashboard.json" | nindent 4 }}
   jambonz-heplify.json: |-
     {{ .Files.Get "configs/grafana/dashboards/jambonz-heplify.json" | nindent 4 }}
+{{- end }}
