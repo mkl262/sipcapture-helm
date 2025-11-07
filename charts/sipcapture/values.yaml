@@ -31,6 +31,22 @@ heplifyServer:
     repository: sipcapture/heplify-server
     tag: latest
     pullSecrets: []
+  service:
+    type: ClusterIP
+    ports:
+      udp: 9060
+      tcp: 9096
+    # Configure nodePorts if you choose to run with NodePort service type
+    #nodePorts:
+    #  udp: 30001
+    sessionAffinity: None
+    sessionAffinityConfig: {}
+    clusterIP: "None"
+    loadBalancerIP: ""
+    loadBalancerSourceRanges: []
+    externalTrafficPolicy: Cluster
+    annotations: {}
+    extraPorts: []
 
 influxdb:
   installOnCluster: true
@@ -48,6 +64,22 @@ homer:
     repository: sipcapture/homer-app
     tag: latest
     pullSecrets: []
+  service:
+    type: ClusterIP
+    ports:
+      http: 80
+    # Configure nodePorts if you choose to run with NodePort service type
+    #nodePorts:
+    #  http: 8080
+    sessionAffinity: None
+    sessionAffinityConfig: {}
+    clusterIP: "None"
+    loadBalancerIP: ""
+    loadBalancerSourceRanges: []
+    externalTrafficPolicy: Cluster
+    annotations: {}
+    extraPorts: []
+
   ingress:
     enabled: true # Disable if ingress controller absent or want to deploy using nodeport service only
     hostname: webapp.myimaginaryhost.com
