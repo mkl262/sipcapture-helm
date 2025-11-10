@@ -13,6 +13,11 @@ postgres-password: {{ if $secret }} {{ index $secret.data "postgres-password" }}
 postgres-user: {{ "homer_user" | b64enc | quote }}
 {{- end -}}
 
+{{- define "gen.defaultpassword.secret" -}}
+{{- $secret := lookup "v1" "Secret" .Release.Namespace "homer-ui-credentials" -}}
+default-password: {{ if $secret }} {{ index $secret.data "default-password" }} {{ else }} {{ randAlphaNum 32 | b64enc | quote }} {{ end }}
+{{- end -}}
+
 {{/*
 Homer pull secrets
 */}}

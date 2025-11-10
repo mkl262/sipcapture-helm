@@ -21,6 +21,7 @@ spec:
       {{- include "telegraf.imagePullSecrets" . | nindent 6 }}
       containers:
         - image: "{{ .Values.telegraf.image.registry }}/{{ .Values.telegraf.image.repository }}:{{ .Values.telegraf.image.tag }}"
+          imagePullPolicy: {{ .Values.telegraf.image.pullPolicy }}
           name: telegraf
           ports:
             - containerPort: 8125

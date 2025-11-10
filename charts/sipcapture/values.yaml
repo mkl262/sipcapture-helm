@@ -30,6 +30,7 @@ heplifyServer:
     registry: ghcr.io
     repository: sipcapture/heplify-server
     tag: latest
+    pullPolicy: IfNotPresent
     pullSecrets: []
   service:
     type: ClusterIP
@@ -54,6 +55,7 @@ influxdb:
     registry: docker.io
     repository: influxdb
     tag: 1.8
+    pullPolicy: IfNotPresent
     pullSecrets: []
   loglevel: info
   storage: 10Gi
@@ -63,6 +65,7 @@ homer:
     registry: ghcr.io
     repository: sipcapture/homer-app
     tag: latest
+    pullPolicy: IfNotPresent
     pullSecrets: []
   service:
     type: ClusterIP
@@ -119,4 +122,5 @@ telegraf:
     registry: docker.io
     repository: telegraf
     tag: 1.19
+    pullPolicy: IfNotPresent
     pullSecrets: []

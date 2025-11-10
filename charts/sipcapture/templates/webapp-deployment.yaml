@@ -20,6 +20,7 @@ spec:
       initContainers:
       - name: copy-config
         image: "{{ .Values.homer.image.registry }}/{{ .Values.homer.image.repository }}:{{ .Values.homer.image.tag }}"
+        imagePullPolicy: {{ .Values.homer.image.pullPolicy }}
         command:
           - sh
           - -c
@@ -35,6 +36,7 @@ spec:
             name: config-dir
       - name: init-db
         image: "{{ .Values.homer.image.registry }}/{{ .Values.homer.image.repository }}:{{ .Values.homer.image.tag }}"
+        imagePullPolicy: {{ .Values.homer.image.pullPolicy }}
         env:
           - name: DB_HOST
             value: "{{ .Values.postgresql.hostname }}"
@@ -123,6 +125,7 @@ spec:
       containers:
         - name: homer-webapp
           image: "{{ .Values.homer.image.registry }}/{{ .Values.homer.image.repository }}:{{ .Values.homer.image.tag }}"
+          imagePullPolicy: {{ .Values.homer.image.pullPolicy }}
           ports:
             - containerPort: 80
           args:
@@ -163,6 +166,11 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.postgresql.auth.existingSecretHomer }}
                   key: postgres-password
+            - name: PROVISIONED_USERS_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: homer-ui-credentials
+                  key: default-password
           volumeMounts:
             - mountPath: /usr/local/homer/etc
               name: config-dir
