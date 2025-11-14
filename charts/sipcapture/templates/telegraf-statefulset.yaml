@@ -2,21 +2,21 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   labels:
-    app: telegraf
+    app: {{ include "telegraf.fullname" . }}
 {{ include "common.labels" . | indent 4 }}
-  name: telegraf
+  name: {{ include "telegraf.fullname" . }}
   namespace: {{ dig "global" "monitoring" "namespace" .Release.Namespace (.Values | merge (dict)) | quote }}
 spec:
-  serviceName: telegraf
+  serviceName: {{ include "telegraf.fullname" . }}
   replicas: 1
   selector:
     matchLabels:
-      app: telegraf
+      app: {{ include "telegraf.fullname" . }}
   template:
     metadata:
-      name: telegraf
+      name: {{ include "telegraf.fullname" . }}
       labels:
-        app: telegraf
+        app: {{ include "telegraf.fullname" . }}
     spec:
       {{- include "telegraf.imagePullSecrets" . | nindent 6 }}
       containers:

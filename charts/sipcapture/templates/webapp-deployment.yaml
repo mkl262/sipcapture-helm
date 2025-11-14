@@ -2,19 +2,19 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: homer-webapp
+    app: {{ include "homer.fullname" . }}
 {{ include "common.labels" . | indent 4 }}
-  name: homer-webapp
+  name: {{ include "homer.fullname" . }}
   namespace: {{ dig "global" "monitoring" "namespace" .Release.Namespace (.Values | merge (dict)) | quote }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: homer-webapp
+      app: {{ include "homer.fullname" . }}
   template:
     metadata:
       labels:
-        app: homer-webapp
+        app: {{ include "homer.fullname" . }}
     spec:
       {{- include "homer.imagePullSecrets" . | nindent 6 }}
       initContainers:

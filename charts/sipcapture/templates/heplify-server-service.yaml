@@ -2,9 +2,9 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: heplify-server
+    app: {{ include "heplify.fullname" . }}
 {{ include "common.labels" . | indent 4 }}
-  name: heplify-server
+  name: {{ include "heplify.fullname" . }}
   namespace: {{ dig "global" "monitoring" "namespace" .Release.Namespace (.Values | merge (dict)) | quote }}
 spec:
   type: {{ .Values.heplifyServer.service.type }}
@@ -38,7 +38,7 @@ spec:
       targetPort: 9096
       protocol: TCP
   selector:
-    app: heplify-server
+    app: {{ include "heplify.fullname" . }}
   {{- if and .Values.heplifyServer.service.clusterIP (eq .Values.heplifyServer.service.type "ClusterIP") }}
   clusterIP: None
   {{- end }}

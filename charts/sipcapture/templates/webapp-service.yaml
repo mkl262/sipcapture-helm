@@ -2,9 +2,9 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: homer-webapp
+    app: {{ include "homer.fullname" . }}
 {{ include "common.labels" . | indent 4 }}
-  name: homer-webapp
+  name: {{ include "homer.fullname" . }}
   namespace: {{ dig "global" "monitoring" "namespace" .Release.Namespace (.Values | merge (dict)) | quote }}
 spec:
   type: {{ .Values.homer.service.type }}
@@ -33,7 +33,7 @@ spec:
       nodePort: null
       {{- end }}
   selector:
-    app: homer-webapp
+    app: {{ include "homer.fullname" . }}
   {{- if and .Values.homer.service.clusterIP (eq .Values.homer.service.type "ClusterIP") }}
   clusterIP: {{ .Values.homer.service.clusterIP }}
   {{- end }}

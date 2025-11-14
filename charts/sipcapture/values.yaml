@@ -1,5 +1,7 @@
 global:
   create_namespace: true
+  security:
+    allowInsecureImages: true
 grafana:
   installOnCluster: true
   ingress:
@@ -48,6 +50,26 @@ heplifyServer:
     externalTrafficPolicy: Cluster
     annotations: {}
     extraPorts: []
+  config:
+    dbDropDays: 14
+    dbDropDaysCall: 0
+    dbDropDaysRegister: 0
+    dbDropDaysDefault: 0
+    dbDropOnStart: false
+    dbBuffer: 400000
+    dbBulk: 400
+    dbMaxSize: 20000000000
+    dbPartIsup: "6h"
+    dbPartLog: "2h"
+    dbPartQos: "6h"
+    dbPartSip: "2h"
+    dbPercentageUsage: 80
+    dbProcDropLimit: 2
+    dbRotate: true
+    dbTimer: 4
+    dbUsageProtection: false
+    dbUsageScheme: "percentage"
+    dbWorker: 8
 
 influxdb:
   installOnCluster: true
@@ -109,8 +131,10 @@ homer:
         - profile
 
 postgresql:
+  image:
+    repository: bitnamilegacy/postgresql
   installOnCluster: true
-  fullnameOverride: "postgresql"
+  fullnameOverride: "sipcapture-postgresql"
   auth:
     postgresPassword: "homerSeven"
     persistence:

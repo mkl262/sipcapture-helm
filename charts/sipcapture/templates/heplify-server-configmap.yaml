@@ -28,13 +28,13 @@ data:
     DBSSLMode             = "{{ default "disable" .Values.postgresql.sslmode }}"
     DBDataTable           = "homer_data"
     DBConfTable           = "homer_config"
-    DBBulk                = 200
+    DBBulk                = 400
     DBTimer               = 4
     DBBuffer              = 400000
     DBWorker              = 8
     DBRotate              = true
     DBPartLog             = "2h"
-    DBPartSip             = "1h"
+    DBPartSip             = "2h"
     DBPartQos             = "6h"
     DBDropDays            = 14
     DBDropDaysCall        = 0
@@ -44,7 +44,7 @@ data:
     DBUsageProtection     = true
     DBUsageScheme         = "percentage"
     DBPercentageUsage     = "80%"
-    DBMaxSize             = "30MB"
+    DBMaxSize             = "20GB"
     Dedup                 = false
     DiscardMethod         = []
     AlegIDs               = ["X-CID"]

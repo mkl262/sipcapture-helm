@@ -7,6 +7,34 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end -}}
 
+{{- define "homer.fullname" -}}
+{{- print (include "common.names.fullname" .) "-homer" -}}
+{{- end -}}
+
+{{- define "heplify.fullname" -}}
+{{- print (include "common.names.fullname" .) "-heplify" -}}
+{{- end -}}
+
+{{- define "influxdb.fullname" -}}
+{{- print (include "common.names.fullname" .) "-influxdb" -}}
+{{- end -}}
+
+{{- define "telegraf.fullname" -}}
+{{- print (include "common.names.fullname" .) "-telegraf" -}}
+{{- end -}}
+
+{{/*
+Create a default fully qualified app name.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+*/}}
+{{- define "homer.postgresql.fullname" -}}
+{{- include "common.names.dependency.fullname" (dict "chartName" "postgresql" "chartValues" .Values.postgresql "context" $) -}}
+{{- end -}}
+
+{{/*
+Generate Postgres credentials or reuse existing ones
+*/}}
+
 {{- define "gen.postgres.secret" -}}
 {{- $secret := lookup "v1" "Secret" .Release.Namespace "postgres-homer-credentials" -}}
 postgres-password: {{ if $secret }} {{ index $secret.data "postgres-password" }} {{ else }} {{ randAlphaNum 32 | b64enc | quote }} {{ end }}

@@ -2,7 +2,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: homer-webapp
+  name: {{ include "homer.fullname" . }}
   {{- if .Values.homer.ingress.annotations }}
   annotations:
     {{- toYaml .Values.homer.ingress.annotations | nindent 4 }}
@@ -17,8 +17,8 @@ spec:
         paths:
         - backend:
             service:
-              name: homer-webapp
-              port: 
+              name: {{ include "homer.fullname" . }}
+              port:
                 number: 80
           path: /
           pathType: Prefix

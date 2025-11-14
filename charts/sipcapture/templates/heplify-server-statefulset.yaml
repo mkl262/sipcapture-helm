@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: heplify-server
+  name: {{ include "heplify.fullname" . }}
   labels:
-    app: heplify-server
+    app:  {{ include "heplify.fullname" . }}
 {{ include "common.labels" . | indent 4 }}
 spec:
   serviceName: heplify-server
   replicas: 1
   selector:
     matchLabels:
-      app: heplify-server
+      app:  {{ include "heplify.fullname" . }}
   template:
     metadata:
       labels:
-        app: heplify-server
+        app:  {{ include "heplify.fullname" . }}
     spec:
       {{- include "heplifyServer.imagePullSecrets" . | nindent 6 }}
       containers:
@@ -36,6 +36,44 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.postgresql.auth.existingSecretHomer }}
                   key: postgres-password
+            - name: HEPLIFYSERVER_DBDROPDAYS
+              value: {{ .Values.heplifyServer.config.dbDropDays | quote }}
+            - name: HEPLIFYSERVER_DBDROPDAYSCALL
+              value: {{ .Values.heplifyServer.config.dbDropDaysCall | quote }}
+            - name: HEPLIFYSERVER_DBDROPDAYSREGISTER
+              value: {{ .Values.heplifyServer.config.dbDropDaysRegister | quote }}
+            - name: HEPLIFYSERVER_DBDROPDAYSDEFAULT
+              value: {{ .Values.heplifyServer.config.dbDropDaysDefault | quote }}
+            - name: HEPLIFYSERVER_DBDROPONSTART
+              value: {{ .Values.heplifyServer.config.dbDropOnStart | quote }}
+            - name: HEPLIFYSERVER_DBBUFFER
+              value: {{ .Values.heplifyServer.config.dbBuffer | quote }}
+            - name: HEPLIFYSERVER_DBBULK
+              value: {{ .Values.heplifyServer.config.dbBulk | quote }}
+            - name: HEPLIFYSERVER_DBMAXSIZE
+              value: {{ .Values.heplifyServer.config.dbMaxSize | quote }}
+            - name: HEPLIFYSERVER_DBPARTISUP
+              value: {{ .Values.heplifyServer.config.dbPartIsup | quote }}
+            - name: HEPLIFYSERVER_DBPARTLOG
+              value: {{ .Values.heplifyServer.config.dbPartLog | quote }}
+            - name: HEPLIFYSERVER_DBPARTQOS
+              value: {{ .Values.heplifyServer.config.dbPartQos | quote }}
+            - name: HEPLIFYSERVER_DBPARTSIP
+              value: {{ .Values.heplifyServer.config.dbPartSip | quote }}
+            - name: HEPLIFYSERVER_DBPERCENTAGEUSAGE
+              value: {{ .Values.heplifyServer.config.dbPercentageUsage | quote }}
+            - name: HEPLIFYSERVER_DBPROCDROPLIMIT
+              value: {{ .Values.heplifyServer.config.dbProcDropLimit | quote }}
+            - name: HEPLIFYSERVER_DBROTATE
+              value: {{ .Values.heplifyServer.config.dbRotate | quote }}
+            - name: HEPLIFYSERVER_DBTIMER
+              value: {{ .Values.heplifyServer.config.dbTimer | quote }}
+            - name: HEPLIFYSERVER_DBUSAGEPROTECTION
+              value: {{ .Values.heplifyServer.config.dbUsageProtection | quote }}
+            - name: HEPLIFYSERVER_DBUSAGESCHEME
+              value: {{ .Values.heplifyServer.config.dbUsageScheme | quote }}
+            - name: HEPLIFYSERVER_DBWORKER
+              value: {{ .Values.heplifyServer.config.dbWorker | quote }}
           ports:
             - containerPort: 9060
               protocol: UDP
