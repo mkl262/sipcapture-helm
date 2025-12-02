@@ -50,6 +50,10 @@ heplifyServer:
     externalTrafficPolicy: Cluster
     annotations: {}
     extraPorts: []
+  serviceMonitor:
+    enabled: false
+    scrapeInterval: 15s
+    scrapeTimeout: 15s
   config:
     dbDropDays: 14
     dbDropDaysCall: 0

@@ -1,0 +1,21 @@
+{{- if .Values.heplifyServer.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app: {{ include "heplify.fullname" . }}
+{{ include "common.labels" . | indent 4 }}
+  name: {{ include "heplify.fullname" . }}
+  namespace: {{ dig "global" "monitoring" "namespace" .Release.Namespace (.Values | merge (dict)) | quote }}
+spec:
+  endpoints:
+    - interval: {{ .Values.heplifyServer.serviceMonitor.scrapeInterval }}
+      port: stats-scraper
+      scrapeTimeout: {{ .Values.heplifyServer.serviceMonitor.scrapeTimeout }}
+  selector:
+    matchLabels:
+      app: {{ include "heplify.fullname" . }}
+  namespaceSelector:
+    matchNames:
+      - {{ dig "global" "monitoring" "namespace" .Release.Namespace (.Values | merge (dict)) | quote }}
+{{- end }}
