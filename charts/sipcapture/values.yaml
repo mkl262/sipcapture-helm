@@ -108,12 +108,15 @@ homer:
     externalTrafficPolicy: Cluster
     annotations: {}
     extraPorts: []
-
   ingress:
     enabled: true # Disable if ingress controller absent or want to deploy using nodeport service only
     hostname: webapp.myimaginaryhost.com
     annotations:
       kubernetes.io/ingress.class: "nginx"
+    #tls: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - chart-example.local
   auth:
     oauth:
       enabled: false
@@ -135,9 +138,9 @@ homer:
         - profile
 
 postgresql:
+  installOnCluster: true
   image:
     repository: bitnamilegacy/postgresql
-  installOnCluster: true
   fullnameOverride: "sipcapture-postgresql"
   auth:
     postgresPassword: "homerSeven"
