@@ -2,15 +2,38 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: homer-webapp
+    app: {{ include "homer.fullname" . }}
 {{ include "common.labels" . | indent 4 }}
-  name: homer-webapp
+  name: {{ include "homer.fullname" . }}
   namespace: {{ dig "global" "monitoring" "namespace" .Release.Namespace (.Values | merge (dict)) | quote }}
 spec:
+  type: {{ .Values.homer.service.type }}
+  {{- if or (eq .Values.homer.service.type "LoadBalancer") (eq .Values.homer.service.type "NodePort") }}
+  externalTrafficPolicy: {{ .Values.homer.service.externalTrafficPolicy | quote }}
+  {{- end }}
+  {{- if and (eq .Values.homer.service.type "LoadBalancer") (not (empty .Values.homer.service.loadBalancerSourceRanges)) }}
+  loadBalancerSourceRanges: {{ .Values.homer.service.loadBalancerSourceRanges }}
+  {{- end }}
+  {{- if and (eq .Values.homer.service.type "LoadBalancer") (not (empty .Values.homer.service.loadBalancerIP)) }}
+  loadBalancerIP: {{ .Values.homer.service.loadBalancerIP }}
+  {{- end }}
+  {{- if .Values.homer.service.sessionAffinity }}
+  sessionAffinity: {{ .Values.homer.service.sessionAffinity }}
+  {{- end }}
+  {{- if .Values.homer.service.sessionAffinityConfig }}
+  sessionAffinityConfig: {{- include "common.tplvalues.render" (dict "value" .Values.homer.service.sessionAffinityConfig "context" $) | nindent 4 }}
+  {{- end }}
   ports:
-    - name: homer-webapp
-      port: 80
-      targetPort: 80
-  type: NodePort
+    - name: http
+      protocol: TCP
+      port: {{ .Values.homer.service.ports.http }}
+      {{- if (and (or (eq .Values.homer.service.type "NodePort") (eq .Values.homer.service.type "LoadBalancer")) (not (empty .Values.homer.service.nodePorts.http))) }}
+      nodePort: {{ .Values.homer.service.nodePorts.http }}
+      {{- else if eq .Values.homer.service.type "ClusterIP" }}
+      nodePort: null
+      {{- end }}
   selector:
-    app: homer-webapp
+    app: {{ include "homer.fullname" . }}
+  {{- if and .Values.homer.service.clusterIP (eq .Values.homer.service.type "ClusterIP") }}
+  clusterIP: {{ .Values.homer.service.clusterIP }}
+  {{- end }}

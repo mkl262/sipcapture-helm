@@ -1,10 +1,11 @@
+{{- if .Values.influxdb.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: influxdb
+    app: {{ include "influxdb.fullname" . }}
 {{ include "common.labels" . | indent 4 }}
-  name: influxdb
+  name: {{ include "influxdb.fullname" . }}
   namespace: {{ dig "global" "monitoring" "namespace" .Release.Namespace (.Values | merge (dict)) | quote }}
 spec:
   ports:
@@ -12,5 +13,6 @@ spec:
       port: 8086
       targetPort: 8086
   selector:
-    app: influxdb
+    app: {{ include "influxdb.fullname" . }}
   clusterIP: None
+{{- end }}

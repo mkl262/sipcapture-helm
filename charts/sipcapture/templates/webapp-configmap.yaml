@@ -17,22 +17,22 @@ data:
       },
       "database_config": {
         "help": "Settings for PGSQL Database (settings)",
-        "host": "postgresql",
+        "host": "{{ .Values.postgresql.hostname }}",
         "keepalive": true,
         "name": "homer_config",
         "node": "LocalConfig",
-        "pass": "homerSeven",
-        "user": "postgres"
+        "pass": "homer_password",
+        "user": "homer_db_user"
       },
       "database_data": {
         "localnode": {
           "help": "Settings for PGSQL Database (data)",
-          "host": "postgresql",
+          "host": "{{ .Values.postgresql.hostname }}",
           "keepalive": true,
           "name": "homer_data",
           "node": "LocalNode",
-          "pass": "homerSeven",
-          "user": "postgres"
+          "pass": "homer_password",
+          "user": "homer_db_user"
         }
       },
       "decoder_shark": {
@@ -86,6 +86,24 @@ data:
         "policy": "autogen",
         "user": "influx_user"
       },
+      {{- if .Values.homer.auth.oauth.enabled }}
+      "oauth2": {
+        "enable": true,
+        "client_id": "{{ .Values.homer.auth.oauth.client_id }}",
+        "client_secret": "{{ .Values.homer.auth.oauth.client_secret }}",
+        "project_id": "{{ .Values.homer.auth.oauth.project_id }}",
+        "auth_uri": "{{ .Values.homer.auth.oauth.auth_uri }}",
+        "token_uri": "{{ .Values.homer.auth.oauth.token_uri }}",
+        "auth_provider_x509_cert_url": "{{ .Values.homer.auth.oauth.auth_provider_x509_cert_url }}",
+        "redirect_uri": "{{ .Values.homer.auth.oauth.redirect_uri }}",
+        "service_redirect": "{{ .Values.homer.auth.oauth.service_redirect }}",
+        "profile_url": "{{ .Values.homer.auth.oauth.profile_url }}",
+        "user_token": "{{ .Values.homer.auth.oauth.user_token }}",
+        "provider_name": "{{ .Values.homer.auth.oauth.provider_name }}",
+        "provider_image": "{{ .Values.homer.auth.oauth.provider_image }}",
+        "scope": {{ .Values.homer.auth.oauth.scope | toJson }}
+      },
+      {{- end }}
       "ldap_config": {
         "admingroup": "admin",
         "adminmode": true,
@@ -130,7 +148,7 @@ data:
       "system_settings": {
         "_loglevels": "can be: fatal, error, warn, info, debug, trace",
         "help": "Settings for HOMER logs",
-        "hostname": "ip-172-31-23-156",
+        "hostname": "homer-app",
         "loglevel": "debug",
         "logname": "homer-app.log",
         "logpath": "/usr/local/homer/log",

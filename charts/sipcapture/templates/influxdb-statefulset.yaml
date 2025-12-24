@@ -2,24 +2,26 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   labels:
-    app: influxdb
+    app: {{ include "influxdb.fullname" . }}
 {{ include "common.labels" . | indent 4 }}
-  name: influxdb
+  name: {{ include "influxdb.fullname" . }}
   namespace: {{ dig "global" "monitoring" "namespace" .Release.Namespace (.Values | merge (dict)) | quote }}
 spec:
-  serviceName: influxdb
+  serviceName: {{ include "influxdb.fullname" . }}
   replicas: 1
   selector:
     matchLabels:
-      app: influxdb
+      app: {{ include "influxdb.fullname" . }}
   template:
     metadata:
-      name: influxdb
+      name: {{ include "influxdb.fullname" . }}
       labels:
-        app: influxdb
+        app: {{ include "influxdb.fullname" . }}
     spec:
+      {{- include "influxdb.imagePullSecrets" . | nindent 6 }}
       containers:
-        - image: {{ .Values.influxdb.image }}
+        - image: "{{ .Values.influxdb.image.registry }}/{{ .Values.influxdb.image.repository }}:{{ .Values.influxdb.image.tag }}"
+          imagePullPolicy: {{ .Values.influxdb.image.pullPolicy }}
           name: influxdb
           env:
             - name: {{ .Values.influxdb.loglevel| quote }}

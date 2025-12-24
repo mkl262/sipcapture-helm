@@ -2,20 +2,43 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: heplify-server
+    app: {{ include "heplify.fullname" . }}
 {{ include "common.labels" . | indent 4 }}
-  name: heplify-server
+  name: {{ include "heplify.fullname" . }}
   namespace: {{ dig "global" "monitoring" "namespace" .Release.Namespace (.Values | merge (dict)) | quote }}
 spec:
+  type: {{ .Values.heplifyServer.service.type }}
+  {{- if or (eq .Values.heplifyServer.service.type "LoadBalancer") (eq .Values.heplifyServer.service.type "NodePort") }}
+  externalTrafficPolicy: {{ .Values.heplifyServer.service.externalTrafficPolicy | quote }}
+  {{- end }}
+  {{- if and (eq .Values.heplifyServer.service.type "LoadBalancer") (not (empty .Values.heplifyServer.service.loadBalancerSourceRanges)) }}
+  loadBalancerSourceRanges: {{ .Values.heplifyServer.service.loadBalancerSourceRanges }}
+  {{- end }}
+  {{- if and (eq .Values.heplifyServer.service.type "LoadBalancer") (not (empty .Values.heplifyServer.service.loadBalancerIP)) }}
+  loadBalancerIP: {{ .Values.heplifyServer.service.loadBalancerIP }}
+  {{- end }}
+  {{- if .Values.heplifyServer.service.sessionAffinity }}
+  sessionAffinity: {{ .Values.heplifyServer.service.sessionAffinity }}
+  {{- end }}
+  {{- if .Values.heplifyServer.service.sessionAffinityConfig }}
+  sessionAffinityConfig: {{- include "common.tplvalues.render" (dict "value" .Values.heplify.service.sessionAffinityConfig "context" $) | nindent 4 }}
+  {{- end }}
   ports:
     - name: "heplify-server"
       port: 9060
       targetPort: 9060
       protocol: UDP
+      {{- if (and (or (eq .Values.heplifyServer.service.type "NodePort") (eq .Values.heplifyServer.service.type "LoadBalancer")) (not (empty .Values.heplifyServer.service.nodePorts.udp))) }}
+      nodePort: {{ .Values.heplifyServer.service.nodePorts.udp }}
+      {{- else if eq .Values.heplifyServer.service.type "ClusterIP" }}
+      nodePort: null
+      {{- end }}
     - name: "stats-scraper"
       port: 9096
       targetPort: 9096
       protocol: TCP
   selector:
-    app: heplify-server
+    app: {{ include "heplify.fullname" . }}
+  {{- if and .Values.heplifyServer.service.clusterIP (eq .Values.heplifyServer.service.type "ClusterIP") }}
   clusterIP: None
+  {{- end }}
